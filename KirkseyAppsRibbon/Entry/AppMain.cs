@@ -35,7 +35,9 @@ namespace Entry
         // Startup
         // </summary>
         // <param name="a"></param>
-        // <returns></returns>
+        // <returns>
+        // Result
+        // </returns>
         // <remarks></remarks>
         public Result OnStartup(UIControlledApplication a)
         {
@@ -55,6 +57,14 @@ namespace Entry
             return Result.Succeeded;
         }
 
+        // <summary>
+        // Shutdown
+        // </summary>
+        // <param name="a"></param>
+        // <returns>
+        // Result
+        // </returns>
+        // <remarks></remarks>
         public Result OnShutdown(UIControlledApplication a)
         {
             return Result.Succeeded;
@@ -72,6 +82,7 @@ namespace Entry
         // <param name="img16"></param>
         // <param name="img32"></param>
         // <param name="tooltipText"></param>
+        // <param name="cmdAvail"></param>
         // <returns></returns>
         // <remarks></remarks>
         private PushButtonData GetPushButtonData(string cmdName, string cmdText, string filePath, string className, string img16, string img32, string tooltipText, string cmdAvail)
@@ -86,8 +97,9 @@ namespace Entry
         // <summary>
         // Adds a set of PushbuttonData to the ribbon on a specified panel as stacked and/or buttons
         // </summary>
-        // <param name="panelName"></param>
-        // <param name="buttons"></param>
+        // <param name = "tabname" ></ param >
+        // <param name = "panelName" ></ param >
+        // <param name = "buttons" ></ param >
         // <remarks></remarks>
         private void AddAsStackedAndButtons(string tabname, string panelName, Dictionary<string, List<PushButtonData>> buttons )//, buttons As Dictionary(Of String, List(Of PushButtonData)) 
         {

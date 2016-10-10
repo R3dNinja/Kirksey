@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
       None
@@ -17,7 +17,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>KirkseyAppsRibbon</RootNamespace>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -94,6 +94,6 @@
   </Target>
   <PropertyGroup>
     <PostBuildEvent>copy "$(ProjectDir)KirkseyAppsRibbon.addin" "C:\ProgramData\Autodesk\REVIT\Addins\2017"
-copy "$(ProjectDir)bin\debug\KirkseyAppsRibbon.dll" "C:\ProgramData\Autodesk\REVIT\Addins\2017\Kirksey"</PostBuildEvent>
+copy "$(ProjectDir)bin\debug\KirkseyAppsRibbon.dll" "C:\ProgramData\Autodesk\REVIT\Addins\2017\Kirksey\"</PostBuildEvent>
   </PropertyGroup>
 </Project>
