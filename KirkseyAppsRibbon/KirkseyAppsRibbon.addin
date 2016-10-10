@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>KirkseyAppsRibbon</Name>
+    <Assembly>Kirksey\KirkseyAppsRibbon.dll</Assembly>
+    <FullClassName>Entry.AppMain</FullClassName>
+    <ClientId>b84fddbb-094f-4847-b077-a3212290f0f4</ClientId>
+    <VendorId>Kirksey</VendorId>
+    <VendorDescription>Kirksey Architecture, http://kirksey.com</VendorDescription>
+  </AddIn>
+</RevitAddIns>

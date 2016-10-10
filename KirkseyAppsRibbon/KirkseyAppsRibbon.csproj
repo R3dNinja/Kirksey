@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
+      None
+    </ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>
+    </ProductVersion>
+    <SchemaVersion>
+    </SchemaVersion>
+    <ProjectGuid>{1B839F80-163A-4366-9D5E-1FBABB6E1117}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>KirkseyAppsRibbon</RootNamespace>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <StartAction>Program</StartAction>
+    <StartProgram>$(ProgramW6432)\Autodesk\Revit 2015\Revit.exe</StartProgram>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <StartAction>Program</StartAction>
+    <StartProgram>$(ProgramW6432)\Autodesk\Revit 2015\Revit.exe</StartProgram>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="PresentationCore" />
+    <Reference Include="RevitAPI">
+      <HintPath>C:\Program Files\Autodesk\Revit 2017\RevitAPI.dll</HintPath>
+    </Reference>
+    <Reference Include="RevitAPIUI">
+      <HintPath>C:\Program Files\Autodesk\Revit 2017\RevitAPIUI.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Entry\AppMain.cs" />
+    <Compile Include="Command.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="KirkseyAppsRibbon.addin">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Icons\BackPocket16.png" />
+    <EmbeddedResource Include="Icons\BackPocket32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Icons\CodeInformation16.png" />
+    <EmbeddedResource Include="Icons\CodeInformation32.png" />
+    <EmbeddedResource Include="Icons\EZDWGConverter16.png" />
+    <EmbeddedResource Include="Icons\EZDWGConverter32.png" />
+    <EmbeddedResource Include="Icons\Keynote16.png" />
+    <EmbeddedResource Include="Icons\Keynote32.png" />
+    <EmbeddedResource Include="Icons\MasterScheduleUpdate16.png" />
+    <EmbeddedResource Include="Icons\MasterScheduleUpdate32.png" />
+    <EmbeddedResource Include="Icons\SheetIndex16.png" />
+    <EmbeddedResource Include="Icons\SheetIndex32.png" />
+    <EmbeddedResource Include="Icons\SheetSpecUpdate16.png" />
+    <EmbeddedResource Include="Icons\SheetSpecUpdate32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Icons\PublishTemplate16.png" />
+    <EmbeddedResource Include="Icons\PublishTemplate32.png" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="AfterClean">
+    <Delete Files="$(AppData)\Autodesk\REVIT\Addins\2015\KirkseyAppsRibbon.addin" />
+    <Delete Files="$(AppData)\Autodesk\REVIT\Addins\2015\KirkseyAppsRibbon.dll" />
+  </Target>
+  <PropertyGroup>
+    <PostBuildEvent>copy "$(ProjectDir)KirkseyAppsRibbon.addin" "C:\ProgramData\Autodesk\REVIT\Addins\2017"
+copy "$(ProjectDir)bin\debug\KirkseyAppsRibbon.dll" "C:\ProgramData\Autodesk\REVIT\Addins\2017\Kirksey"</PostBuildEvent>
+  </PropertyGroup>
+</Project>
