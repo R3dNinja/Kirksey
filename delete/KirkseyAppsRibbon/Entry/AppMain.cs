@@ -1,4 +1,4 @@
-﻿#region Namespaces
+#region Namespaces
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,10 +14,10 @@ using Autodesk.Revit.UI;
 #endregion
 
 namespace Entry
-// <summary>
-// Revit Ribbon Implementation
-// </summary>
-// <remarks></remarks>
+    // <summary>
+    // Revit Ribbon Implementation
+    // </summary>
+    // <remarks></remarks>
 {
     public class AppMain : IExternalApplication
     {
@@ -101,9 +101,9 @@ namespace Entry
         // <param name = "panelName" ></ param >
         // <param name = "buttons" ></ param >
         // <remarks></remarks>
-        private void AddAsStackedAndButtons(string tabname, string panelName, Dictionary<string, List<PushButtonData>> buttons)//, buttons As Dictionary(Of String, List(Of PushButtonData)) 
+        private void AddAsStackedAndButtons(string tabname, string panelName, Dictionary<string, List<PushButtonData>> buttons )//, buttons As Dictionary(Of String, List(Of PushButtonData)) 
         {
-
+            
             RibbonPanel m_panelSubsc = GetRibbonPanelByTabName(tabname, panelName);
             int m_iCnt = 0;
             foreach (var kvp in buttons)
@@ -489,4 +489,3 @@ namespace Entry
         #endregion
     }
 }
-

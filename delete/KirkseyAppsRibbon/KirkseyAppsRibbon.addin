@@ -5,7 +5,7 @@
     <Assembly>Kirksey\KirkseyAppsRibbon.dll</Assembly>
     <FullClassName>Entry.AppMain</FullClassName>
     <ClientId>b84fddbb-094f-4847-b077-a3212290f0f4</ClientId>
-    <VendorId>com.Kirksey</VendorId>
+    <VendorId>Kirksey</VendorId>
     <VendorDescription>Kirksey Architecture, http://kirksey.com</VendorDescription>
   </AddIn>
 </RevitAddIns>
