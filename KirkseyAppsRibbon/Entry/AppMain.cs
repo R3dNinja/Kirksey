@@ -29,6 +29,7 @@ namespace Entry
         private string mikesComputer = "C04400830";
         private string login = WindowsIdentity.GetCurrent().Name;
         private string Currentuser;
+        private static ControlledApplication m_CtrlApp;
 
         #region "Public Memebers - Revit IExternalApplication Implementation"
         // <summary>
@@ -47,6 +48,11 @@ namespace Entry
                 _path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
                 //UI App
                 _uiApp = a;
+                //Controlled App
+                m_CtrlApp = a.ControlledApplication;
+                //Set an event handler for opening documents.
+                m_CtrlApp.DocumentOpened += new EventHandler<Autodesk.Revit.DB.Events.DocumentOpenedEventArgs>(CtrlApp_DocumentOpened);
+                //get current user
                 Currentuser = GetUser(login);
                 //General Buttons
                 LoadItems(Currentuser);
@@ -67,7 +73,16 @@ namespace Entry
         // <remarks></remarks>
         public Result OnShutdown(UIControlledApplication a)
         {
+            m_CtrlApp.DocumentOpened -= CtrlApp_DocumentOpened;
             return Result.Succeeded;
+        }
+        #endregion
+
+        #region Event handler
+        void CtrlApp_DocumentOpened(object sender, Autodesk.Revit.DB.Events.DocumentOpenedEventArgs e)
+        {
+            var command = new KirkseyAppsRibbon.Command();
+            command.Execute(new UIApplication(sender as Application));
         }
         #endregion
 
@@ -443,6 +458,13 @@ namespace Entry
                                                 ""));
             }
 
+
+        }
+
+        private void DrawingIssusance()
+        {
+            RibbonPanel m_panelSheetData = GetRibbonPanelByTabName(CTabName, "Drawing Issuance");
+
             string m_sheetIndexPath = Path.Combine(_path, "SheetIndex.dll");
             if (File.Exists(m_sheetIndexPath))
             {
@@ -456,7 +478,18 @@ namespace Entry
                                                 ""));
             }
 
-
+            string m_revisionNarrativePath = Path.Combine(_path, "RevisionNarrative.dll");
+            if (File.Exists(m_revisionNarrativePath))
+            {
+                m_panelSheetData.AddItem(GetPushButtonData("RevisionNarrative",
+                                                "Generate \nRevision Narrative",
+                                                m_revisionNarrativePath,
+                                                "RevisionNarrative.Command",
+                                                "KirkseyAppsRibbon.Icons.RevisionNarrative16.png",
+                                                "KirkseyAppsRibbon.Icons.RevisionNarrative32.png",
+                                                "Export Revision Data to Word Document for Revision Narrative",
+                                                ""));
+            }
         }
 
         private void LoadKeynotes()
@@ -473,11 +506,35 @@ namespace Entry
         private void LoadDWGTool()
         {
             // Keynote Edit - Large Button
+            RibbonPanel m_panelUtilities = null;
             string m_DWGPath = Path.Combine(_path, "ConvertDWGtoLines.dll");
             if (File.Exists(m_DWGPath))
             {
-                RibbonPanel m_panelUtilities = GetRibbonPanelByTabName(CTabName, "Drawing Utilities");
+                if (m_panelUtilities == null)
+                {
+                    m_panelUtilities = GetRibbonPanelByTabName(CTabName, "Drawing Utilities");
+                }
                 AddButton(m_panelUtilities, "EZDWG", "EZ DWG \nConverter", m_DWGPath, "ConvertDWGtoLines.Command", "KirkseyAppsRibbon.Icons.EZDWGConverter16.png", "KirkseyAppsRibbon.Icons.EZDWGConverter32.png", "Convert a selected DWG to detail lines.", "");
+            }
+            m_DWGPath = Path.Combine(_path, "InteriorHelper.dll");
+            if (File.Exists(m_DWGPath))
+            {
+                if (m_panelUtilities == null)
+                {
+                    m_panelUtilities = GetRibbonPanelByTabName(CTabName, "Drawing Utilities");
+                }
+                
+                AddButton(m_panelUtilities, "Interior Converter", "Arch to Interior \nConverter", m_DWGPath, "InteriorHelper.Command", "KirkseyAppsRibbon.Icons.AtoI16.png", "KirkseyAppsRibbon.Icons.AtoI32.png", "Convert Architectural Views and Sheets to Interior Views and Sheets.", "");
+            }
+            m_DWGPath = Path.Combine(_path, "SVG Decode.dll");
+            if (File.Exists(m_DWGPath))
+            {
+                if (m_panelUtilities == null)
+                {
+                    m_panelUtilities = GetRibbonPanelByTabName(CTabName, "Drawing Utilities");
+                }
+
+                AddButton(m_panelUtilities, "PDF Importer", "PDF \nImporter", m_DWGPath, "SVG_Decode.Command", "KirkseyAppsRibbon.Icons.PDFImport16.png", "KirkseyAppsRibbon.Icons.PDFImport32.png", "Vector and Raster import of PDF files.", "");
             }
         }
 
