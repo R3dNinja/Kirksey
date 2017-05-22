@@ -1,6 +1,7 @@
 ﻿#region Namespaces
 using System;
 using System.Collections.Generic;
+using System.DirectoryServices.ActiveDirectory;
 using System.IO;
 using System.Reflection;
 using System.Security.Principal;
@@ -11,6 +12,9 @@ using System.Windows.Media.Imaging;
 using Autodesk.Revit.ApplicationServices;
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.UI;
+using Autodesk.Windows;
+using RibbonItem = Autodesk.Revit.UI.RibbonItem;
+using UIFramework;
 #endregion
 
 namespace Entry
@@ -30,6 +34,8 @@ namespace Entry
         private string login = WindowsIdentity.GetCurrent().Name;
         private string Currentuser;
         private static ControlledApplication m_CtrlApp;
+        private Domain CurrentDomain = Domain.GetComputerDomain();
+        private string KirkseyDomain = "kirksey.com";
 
         #region "Public Memebers - Revit IExternalApplication Implementation"
         // <summary>
@@ -54,8 +60,13 @@ namespace Entry
                 m_CtrlApp.DocumentOpened += new EventHandler<Autodesk.Revit.DB.Events.DocumentOpenedEventArgs>(CtrlApp_DocumentOpened);
                 //get current user
                 Currentuser = GetUser(login);
+
                 //General Buttons
-                LoadItems(Currentuser);
+                if (CurrentDomain.Name.ToLower() == KirkseyDomain.ToLower())
+                {
+                    LoadItems(Currentuser);
+                }
+                
             }
             catch
             {
@@ -119,7 +130,7 @@ namespace Entry
         private void AddAsStackedAndButtons(string tabname, string panelName, Dictionary<string, List<PushButtonData>> buttons)//, buttons As Dictionary(Of String, List(Of PushButtonData)) 
         {
 
-            RibbonPanel m_panelSubsc = GetRibbonPanelByTabName(tabname, panelName);
+            Autodesk.Revit.UI.RibbonPanel m_panelSubsc = GetRibbonPanelByTabName(tabname, panelName);
             int m_iCnt = 0;
             foreach (var kvp in buttons)
             {
@@ -216,14 +227,14 @@ namespace Entry
         // <param name="panelName">Panel Name</param>
         // <returns></returns>
         // <remarks></remarks>
-        private RibbonPanel GetRibbonPanelByTabName(string tabName, string panelName)
+        private Autodesk.Revit.UI.RibbonPanel GetRibbonPanelByTabName(string tabName, string panelName)
         {
-            RibbonPanel m_panel = null;
+            Autodesk.Revit.UI.RibbonPanel m_panel = null;
             bool exists = false;
             try
             {
                 // Does it exist already?
-                foreach (RibbonPanel x in _uiApp.GetRibbonPanels(tabName))
+                foreach (Autodesk.Revit.UI.RibbonPanel x in _uiApp.GetRibbonPanels(tabName))
                 {
                     if (x.Title.ToLower() == panelName.ToLower())
                     {
@@ -277,7 +288,7 @@ namespace Entry
         // <param name="tooltip">Tooltip to add to the button</param>
         // <param name="pbAvail">Pushbutton availability class, blank if none</param>
         // <remarks></remarks>
-        private void AddButton(RibbonPanel rpanel, string buttonName, string buttonText, string dllPath, string dllClass, string imagePath16, string imagePath32, string toolTip, string pbAvail)
+        private void AddButton(Autodesk.Revit.UI.RibbonPanel rpanel, string buttonName, string buttonText, string dllPath, string dllClass, string imagePath16, string imagePath32, string toolTip, string pbAvail)
         {
             PushButtonData m_pbData = GetPushButtonData(buttonName, buttonText, dllPath, dllClass, imagePath16, imagePath32, toolTip, pbAvail);
             rpanel.AddItem(m_pbData);
@@ -297,6 +308,10 @@ namespace Entry
             LoadKeynotes();
 
             LoadSheetData();
+
+            DrawingIssusance();
+
+            LoadAutomationTools();
 
             LoadDWGTool();
 
@@ -321,7 +336,7 @@ namespace Entry
                     string m_publishTemplatePath = Path.Combine(_path, "PublishTemplate1.dll");
                     if (File.Exists(m_publishTemplatePath))
                     {
-                        RibbonPanel m_panelKeynote = GetRibbonPanelByTabName(CTabName, "Template Tool");
+                        Autodesk.Revit.UI.RibbonPanel m_panelKeynote = GetRibbonPanelByTabName(CTabName, "Template Tool");
                         AddButton(m_panelKeynote, "PublishTemplate", "Publish\nTemplate", m_publishTemplatePath, "PublishTemplate.Command", "KirkseyAppsRibbon.Icons.PublishTemplate16.png", "KirkseyAppsRibbon.Icons.PublishTemplate32.png", "Back Pocket BIM Tools", "");
                     }
                 }
@@ -333,7 +348,7 @@ namespace Entry
                 string m_backPocketPath = Path.Combine(_path, "ReplaceAssemblyCode.dll");
                 if (File.Exists(m_backPocketPath))
                 {
-                    RibbonPanel m_panelKeynote = GetRibbonPanelByTabName(CTabName, "Back Pocket");
+                    Autodesk.Revit.UI.RibbonPanel m_panelKeynote = GetRibbonPanelByTabName(CTabName, "Back Pocket");
                     AddButton(m_panelKeynote, "BackPocket", "Back\nPocket", m_backPocketPath, "ReplaceAssemblyCode.Command", "KirkseyAppsRibbon.Icons.BackPocket16.png", "KirkseyAppsRibbon.Icons.BackPocket32.png", "Back Pocket BIM Tools", "");
                 }
             }
@@ -417,7 +432,7 @@ namespace Entry
 
         private void LoadSheetData()
         {
-            RibbonPanel m_panelSheetData = GetRibbonPanelByTabName(CTabName, "External Data Management");
+            Autodesk.Revit.UI.RibbonPanel m_panelSheetData = GetRibbonPanelByTabName(CTabName, "External Data Management");
 
             string m_codePath = Path.Combine(_path, "ManageCodeInformation.dll");
             if (File.Exists(m_codePath))
@@ -433,16 +448,45 @@ namespace Entry
             }
 
             string m_masterSchedulePath = Path.Combine(_path, "ManageMasterSchedule.dll");
+            string m_ExcelImportPath = Path.Combine(_path, "ExcelImport.dll");
             if (File.Exists(m_masterSchedulePath))
             {
-                m_panelSheetData.AddItem(GetPushButtonData("ManageMasterSchedule",
-                                                "Import \nMaster Schedule",
-                                                m_masterSchedulePath,
-                                                "ManageMasterSchedule.Command",
-                                                "KirkseyAppsRibbon.Icons.MasterScheduleUpdate16.png",
-                                                "KirkseyAppsRibbon.Icons.MasterScheduleUpdate32.png",
-                                                "Load and Place Master Schedule Data",
-                                                ""));
+                if (File.Exists(m_ExcelImportPath))
+                {
+                    //Both Exist
+                    AddSplitButton(m_panelSheetData, m_masterSchedulePath, m_ExcelImportPath);
+                }
+                else
+                {
+                    //Only Master Schedule Exists
+                    m_panelSheetData.AddItem(GetPushButtonData("ManageMasterSchedule",
+                                                    "Import \nMaster Schedule",
+                                                    m_masterSchedulePath,
+                                                    "ManageMasterSchedule.Command",
+                                                    "KirkseyAppsRibbon.Icons.MasterScheduleUpdate16.png",
+                                                    "KirkseyAppsRibbon.Icons.MasterScheduleUpdate32.png",
+                                                    "Load and Place Master Schedule Data",
+                                                    ""));
+                }
+            }
+            else
+            {
+                if (File.Exists(m_ExcelImportPath))
+                {
+                    //Only ExcelImport Exists
+                    m_panelSheetData.AddItem(GetPushButtonData("ManageMasterSchedule",
+                                                    "Import \nMaster Schedule",
+                                                    m_ExcelImportPath,
+                                                    "ExcelImport.Command",
+                                                    "KirkseyAppsRibbon.Icons.MasterScheduleUpdate16.png",
+                                                    "KirkseyAppsRibbon.Icons.MasterScheduleUpdate32.png",
+                                                    "Load and Place Master Schedule Data",
+                                                    ""));
+                }
+                else
+                {
+                    //None exists
+                }
             }
 
             string m_sheetSpecsPath = Path.Combine(_path, "ManageSheetSpecs.dll");
@@ -463,12 +507,12 @@ namespace Entry
 
         private void DrawingIssusance()
         {
-            RibbonPanel m_panelSheetData = GetRibbonPanelByTabName(CTabName, "Drawing Issuance");
+            Autodesk.Revit.UI.RibbonPanel m_panelIssueData = GetRibbonPanelByTabName(CTabName, "Drawing Issuance");
 
             string m_sheetIndexPath = Path.Combine(_path, "SheetIndex.dll");
             if (File.Exists(m_sheetIndexPath))
             {
-                m_panelSheetData.AddItem(GetPushButtonData("SheetIndex",
+                m_panelIssueData.AddItem(GetPushButtonData("SheetIndex",
                                                 "Import \nConsultants Sheets",
                                                 m_sheetIndexPath,
                                                 "SheetIndex.Command",
@@ -481,7 +525,7 @@ namespace Entry
             string m_revisionNarrativePath = Path.Combine(_path, "RevisionNarrative.dll");
             if (File.Exists(m_revisionNarrativePath))
             {
-                m_panelSheetData.AddItem(GetPushButtonData("RevisionNarrative",
+                m_panelIssueData.AddItem(GetPushButtonData("RevisionNarrative",
                                                 "Generate \nRevision Narrative",
                                                 m_revisionNarrativePath,
                                                 "RevisionNarrative.Command",
@@ -498,7 +542,7 @@ namespace Entry
             string m_keynotePath = Path.Combine(_path, "KeynoteData.dll");
             if (File.Exists(m_keynotePath))
             {
-                RibbonPanel m_panelKeynote = GetRibbonPanelByTabName(CTabName, "Keynote Managment");
+                Autodesk.Revit.UI.RibbonPanel m_panelKeynote = GetRibbonPanelByTabName(CTabName, "Keynote Managment");
                 AddButton(m_panelKeynote, "KeynoteData", "Manage \nKeynotes", m_keynotePath, "KeynoteData.Command", "KirkseyAppsRibbon.Icons.Keynote16.png", "KirkseyAppsRibbon.Icons.Keynote32.png", "Edit and Reload Keynote definitions", "");
             }
         }
@@ -506,7 +550,7 @@ namespace Entry
         private void LoadDWGTool()
         {
             // Keynote Edit - Large Button
-            RibbonPanel m_panelUtilities = null;
+            Autodesk.Revit.UI.RibbonPanel m_panelUtilities = null;
             string m_DWGPath = Path.Combine(_path, "ConvertDWGtoLines.dll");
             if (File.Exists(m_DWGPath))
             {
@@ -538,10 +582,90 @@ namespace Entry
             }
         }
 
+        private void LoadAutomationTools()
+        {
+            //List<string> vaildUser = new List<string>();
+            //vaildUser.Add("michaelr");
+            //vaildUser.Add("clays");
+            //vaildUser.Add("russellw");
+            //vaildUser.Add("garthw");
+            //vaildUser.Add("craigp");
+            //vaildUser.Add("amandam");
+            //foreach (String user in vaildUser)
+            //{
+                //if (user == Currentuser.ToLower())
+                //{
+                    string m_detailPath = Path.Combine(_path, "DetailBuilder.dll");
+                    if (File.Exists(m_detailPath))
+                    {
+
+                        Autodesk.Revit.UI.RibbonPanel m_panelUtilities = GetRibbonPanelByTabName(CTabName, "Automation Tools");
+
+                        PushButtonData m_pbData = GetPushButtonData("Detail Builder", "Detail \nBuilder", m_detailPath, "DetailBuilder.Command", "KirkseyAppsRibbon.Icons.DetailBuilder16.png", "KirkseyAppsRibbon.Icons.DetailBuilder32.png", "Formerly Project Seagul. *M*A*G*I*C*", "");
+
+                        var button1 = m_panelUtilities.AddItem(m_pbData);
+
+                        var tempPath = Path.Combine(Path.GetTempPath(), "Magic.swf");
+
+                        using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("KirkseyAppsRibbon.Magic.swf"))
+                        {
+                            var buffer = new byte[stream.Length];
+
+                            stream.Read(buffer, 0, buffer.Length);
+
+                            using (FileStream fs = new FileStream(
+                              tempPath, FileMode.Create, FileAccess.Write))
+                            {
+                                fs.Write(buffer, 0, buffer.Length);
+                            }
+                        }
+
+                        RibbonToolTip toolTip1 = new RibbonToolTip()
+                        {
+                            Title = "Detail Builder",
+                            Content = "Import standard details based on model componets",
+                            ExpandedContent = "Formerly Project Seagul. *M*A*G*I*C*",
+                            ExpandedVideo = new Uri(tempPath),
+                            HelpSource = new Uri("https://www.youtube.com/watch?v=U9t-slLl30E"),
+                            IsHelpEnabled = true,
+                            IsProgressive = true
+                        };
+
+                        SetRibbonItemToolTip(button1, toolTip1);
+                    }
+                //}
+            //}
+        }
+
         private string GetUser(string login)
         {
             string domainUser = Regex.Replace(login, ".*\\\\(.*)", "$1", RegexOptions.None);
             return domainUser;
+        }
+
+        void SetRibbonItemToolTip(RibbonItem item, RibbonToolTip toolTip)
+        {
+            IUIRevitItemConverter itemConverter =
+                new InternalMethodUIRevitItemConverter();
+
+            var ribbonItem = itemConverter.GetRibbonItem(item);
+            if (ribbonItem == null)
+                return;
+            ribbonItem.ToolTip = toolTip;
+        }
+
+        private void AddSplitButton(Autodesk.Revit.UI.RibbonPanel panel, string m_masterSchedulePath, string m_ExcelImportPath)
+        {
+            PushButtonData buttonOne = new PushButtonData("ButtonOne", "Image Based Import", m_masterSchedulePath, "ManageMasterSchedule.Command");
+            buttonOne.LargeImage = LoadPngImgSource("KirkseyAppsRibbon.Icons.MasterScheduleUpdateImage32.png");
+
+            PushButtonData buttonTwo = new PushButtonData("ButtonTwon", "Text/Schedule Based Import", m_ExcelImportPath, "ExcelImport.Command");
+            buttonTwo.LargeImage = LoadPngImgSource("KirkseyAppsRibbon.Icons.MasterScheduleUpdateText32.png");
+
+            SplitButtonData sb1 = new SplitButtonData("splitButton1", "Split");
+            SplitButton sb = panel.AddItem(sb1) as SplitButton;
+            sb.AddPushButton(buttonOne);
+            sb.AddPushButton(buttonTwo);
         }
         #endregion
     }

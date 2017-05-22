@@ -18,6 +18,14 @@ namespace KirkseyAppsRibbon
         private ICollection<ElementId> previousIds = null;
         private DateTime previousTimeStamp = DateTime.MinValue;
 
+        // map with key = sheet element id and
+        // value = list of viewport element ids:
+        Dictionary<ElementId, List<ElementId>> mapSheetToViewport = new Dictionary<ElementId, List<ElementId>>();
+
+        // map with key = viewport element id and
+        // value = sheet element id:
+        Dictionary<ElementId, ElementId> mapViewportToSheet = new Dictionary<ElementId, ElementId>();
+
 
         internal ViewportUpdater(AddInId addinID)
         {
@@ -44,7 +52,9 @@ namespace KirkseyAppsRibbon
         {
             try
             {
+
                 DateTime currentTimeStamp = DateTime.Now;
+                var difference = currentTimeStamp - previousTimeStamp;
                 Document doc = data.GetDocument();
                 ICollection<ElementId> ids = data.GetModifiedElementIds();
 
@@ -56,7 +66,10 @@ namespace KirkseyAppsRibbon
                     }
                     else
                     {
-                        upDateDrawingNumber(id, doc);
+                        if (difference > humanClick)
+                        {
+                            upDateDrawingNumber(id, doc);
+                        }
                     }
                 }
 
@@ -84,6 +97,7 @@ namespace KirkseyAppsRibbon
             foreach (ElementId id in ids)
             {
                 Viewport viewport = doc.GetElement(id) as Viewport;
+                var sheetID = viewport.SheetId;
                 View associatedView = doc.GetElement(viewport.ViewId) as View;
 
                 IList<Parameter> ps = associatedView.GetParameters("UseDetailNumber");
@@ -105,21 +119,32 @@ namespace KirkseyAppsRibbon
 
         private void upDateDrawingNumber(ElementId id, Document doc)
         {
-            Viewport viewport = doc.GetElement(id) as Viewport;
-            View associatedView = doc.GetElement(viewport.ViewId) as View;
-
-            IList<Parameter> ps = associatedView.GetParameters("UseDetailNumber");
-
-            int shouldUpdate = 0;
-
-            if (ps.Count > 0)
+            View activeview = doc.ActiveView;
+            if (activeview.ViewType == ViewType.DrawingSheet)
             {
-                shouldUpdate = ps[0].AsInteger();
+                Viewport viewport = doc.GetElement(id) as Viewport;
+                var sheetID = viewport.SheetId;
+                if (sheetID.IntegerValue > 0)
+                {
+                    View associatedView = doc.GetElement(viewport.ViewId) as View;
+
+                    IList<Parameter> ps = associatedView.GetParameters("UseDetailNumber");
+
+                    int shouldUpdate = 0;
+
+                    if (ps.Count > 0)
+                    {
+                        shouldUpdate = ps[0].AsInteger();
+                    }
+                    if (shouldUpdate == 1)
+                    {
+                        renumberViewport(viewport, doc);
+                    }
+                }
             }
-            if (shouldUpdate == 1)
-            {
-                renumberViewport(viewport, doc);
-            }
+
+
+
         }
 
         static bool CompareCollection(ICollection<ElementId> currentIds, ICollection<ElementId> previousIds)
@@ -192,7 +217,23 @@ namespace KirkseyAppsRibbon
             {
                 titleBlock = title_blocks[0];
                 var p = titleBlock.get_Parameter(BuiltInParameter.SHEET_WIDTH);
-                BoundingBoxXYZ box = titleBlock.get_BoundingBox(doc.ActiveView);
+                //This is causing issues.  If the sheet isn't the active view, but a view on a sheet is.
+                View activeview = doc.ActiveView;
+                if (activeview.ViewType != ViewType.DrawingSheet)
+                {
+                    //Sets up mapping of sheets with views and views on sheets.
+                    GetViewMapping(doc);
+
+                    ElementId viewId = mapViewportToSheet[activeview.Id];
+
+                    activeview = doc.GetElement(viewId) as View;
+
+                    //https://forums.autodesk.com/t5/revit-api-forum/how-do-i-determine-if-the-active-view-is-being-accessed-through/m-p/6449863/highlight/true#M17471
+                    //http://thebuildingcoder.typepad.com/blog/2009/01/viewports-and-sheets.html
+                    //var sheet = activeview.
+                }
+
+                BoundingBoxXYZ box = titleBlock.get_BoundingBox(activeview);
                 double dwidth = p.AsDouble();
                 tbp = setSheetParameters(dwidth, tbp, box);
             }
@@ -259,5 +300,45 @@ namespace KirkseyAppsRibbon
             return "Dynamic Drawing Updater";
         }
         #endregion
+
+        private void GetViewMapping(Document doc)
+        {
+            mapSheetToViewport.Clear();
+            mapViewportToSheet.Clear();
+            List<Element> sheets = new List<Element>();
+
+            FilteredElementCollector sheetCollector = new FilteredElementCollector(doc);
+            sheetCollector.OfClass(typeof(ViewSheet));
+
+            sheets = sheetCollector.ToList();
+
+            foreach(ViewSheet sheet in sheets)
+            {
+                ElementId idSheet = sheet.Id;
+
+                ISet<ElementId> viewHash = sheet.GetAllPlacedViews();
+
+                if (viewHash.Count > 0)
+                {
+                    List<ElementId> viewIds = viewHash.ToList();
+                    foreach (ElementId viewId in viewIds)
+                    {
+
+                        if (!mapSheetToViewport.ContainsKey(idSheet))
+                        {
+                            mapSheetToViewport.Add(idSheet, new List<ElementId>());
+                        }
+
+                        mapSheetToViewport[idSheet].Add(viewId);
+
+                        if (mapViewportToSheet.ContainsKey(viewId))
+                            mapViewportToSheet[viewId] = idSheet;
+                        else
+                            mapViewportToSheet.Add(viewId, idSheet);
+                    }
+                }
+            }
+
+        }
     }
 }
